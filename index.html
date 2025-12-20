@@ -7,129 +7,66 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-veil" aria-hidden="true"></div>
     <header class="site-header">
       <div class="brand">
         <span class="brand-mark">KG</span>
-        <span class="brand-name">Key-Gen Hash Studio</span>
+        <div>
+          <p class="brand-title">Key-Gen</p>
+          <p class="brand-subtitle">Deterministic 64-character hash generator</p>
+        </div>
       </div>
-      <nav class="site-nav">
-        <a href="#generator">Generator</a>
-        <a href="#how">How it works</a>
-        <a href="#details">Details</a>
-      </nav>
     </header>
 
-    <main>
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Deterministic 64-char hashing</p>
-          <h1>Turn any key into a 64-character keyboard-safe signature.</h1>
-          <p class="lead">
-            A SHA-512 powered hash mapped to printable ASCII characters. Fast, repeatable,
-            and easy to paste anywhere.
-          </p>
-          <div class="hero-actions">
-            <a class="btn primary" href="#generator">Generate a hash</a>
-            <a class="btn ghost" href="#how">See the algorithm</a>
-          </div>
-          <div class="stat-row">
-            <div class="stat">
-              <span class="stat-value">64</span>
-              <span class="stat-label">characters</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">95</span>
-              <span class="stat-label">keyboard symbols</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">1</span>
-              <span class="stat-label">deterministic output</span>
-            </div>
-          </div>
-        </div>
-        <div class="hero-card" id="generator">
-          <div class="card-header">
-            <h2>Hash Generator</h2>
-            <span class="chip">SHA-512</span>
-          </div>
-          <label class="field">
-            <span>Input key</span>
-            <input id="key-input" type="text" placeholder="Type your key" />
-          </label>
-          <div class="actions">
-            <button class="btn primary" id="generate-btn">Generate</button>
-            <button class="btn ghost" id="shuffle-btn">Sample key</button>
-          </div>
-          <div class="output">
-            <div class="output-header">
-              <span>64-character output</span>
-              <button class="btn small" id="copy-btn">Copy</button>
-            </div>
-            <code id="hash-output">Waiting for input...</code>
-          </div>
-        </div>
-      </section>
-
-      <section class="section reveal" id="how">
-        <div class="section-title">
-          <h2>How it works</h2>
-          <p>Every input goes through a SHA-512 digest, then each byte becomes a printable symbol.</p>
-        </div>
-        <div class="steps">
-          <div class="step-card">
-            <span class="step-index">01</span>
-            <h3>Digest</h3>
-            <p>SHA-512 converts the key into 64 bytes of cryptographic entropy.</p>
-          </div>
-          <div class="step-card">
-            <span class="step-index">02</span>
-            <h3>Map</h3>
-            <p>Each byte maps to 95 keyboard characters by modular indexing.</p>
-          </div>
-          <div class="step-card">
-            <span class="step-index">03</span>
-            <h3>Output</h3>
-            <p>You receive a fixed-length, repeatable 64-character signature.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="section reveal" id="details">
-        <div class="detail-grid">
-          <div class="detail-card">
-            <h3>Keyboard-safe alphabet</h3>
-            <p>
-              Uppercase, lowercase, digits, and punctuation. The full printable ASCII
-              set means the hash fits anywhere text is accepted.
-            </p>
-          </div>
-          <div class="detail-card">
-            <h3>Deterministic and fast</h3>
-            <p>
-              The same key always yields the same output. SHA-512 keeps it fast and
-              battle-tested for reliability.
-            </p>
-          </div>
-          <div class="detail-card">
-            <h3>Ready for paste</h3>
-            <p>
-              Copy the output in a click and use it as an identifier, checksum, or tag.
-            </p>
-          </div>
-        </div>
-        <div class="cta">
+    <main class="layout">
+      <section class="panel" id="generator">
+        <div class="panel-header">
           <div>
-            <h3>Want the code?</h3>
-            <p>Look in the repo for the Python hashing implementation.</p>
+            <h1>Hash Generator</h1>
+            <p class="panel-note">Printable ASCII output, always 64 characters.</p>
           </div>
-          <a class="btn primary" href="#generator">Try another key</a>
+          <span class="chip" id="hash-chip">SHA-512</span>
         </div>
+        <label class="field">
+          <span>Input key</span>
+          <input id="key-input" type="text" placeholder="Type a key or phrase" autocomplete="off" />
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>Hash type</span>
+            <select id="hash-select"></select>
+          </label>
+          <label class="field">
+            <span>Augmentation</span>
+            <select id="augment-select"></select>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="generate-btn">Generate</button>
+          <button class="btn ghost" id="shuffle-btn">Sample key</button>
+        </div>
+        <div class="output">
+          <div class="output-header">
+            <span id="output-label">64-character output</span>
+            <button class="btn small" id="copy-btn">Copy</button>
+          </div>
+          <code id="hash-output">Waiting for input...</code>
+        </div>
+      </section>
+
+      <section class="panel info">
+        <h2>How it works</h2>
+        <ul class="info-list">
+          <li>Select a hash type. Shorter digests are expanded deterministically to 64 bytes.</li>
+          <li>Augmentation transforms the input before hashing (reverse, upper, swap case, etc.).</li>
+          <li>Output uses the same 95 printable ASCII characters every time.</li>
+          <li>Same input + settings always equals the same output.</li>
+        </ul>
       </section>
     </main>
 
     <footer class="site-footer">
-      <p>Key-Gen Hash Studio - deterministic output, bold presentation.</p>
+      <p>Key-Gen Hash Studio - compact, deterministic, keyboard-safe.</p>
     </footer>
 
     <script src="script.js"></script>
