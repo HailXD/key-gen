@@ -2,12 +2,18 @@ const ALPHABET =
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
   "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 const OUTPUT_LENGTH = 64;
+const UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
+const DIGITS = "0123456789";
+const SPECIALS = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 
 const keyInput = document.getElementById("key-input");
 const hashSelect = document.getElementById("hash-select");
 const augmentToggle = document.getElementById("augment-toggle");
 const augmentMenu = document.getElementById("augment-menu");
 const augmentList = document.getElementById("augment-list");
+const randomKeyBtn = document.getElementById("random-key-btn");
+const randomCaseBtn = document.getElementById("random-case-btn");
 const shuffleBtn = document.getElementById("shuffle-btn");
 const copyBtn = document.getElementById("copy-btn");
 const hashOutput = document.getElementById("hash-output");
@@ -71,6 +77,38 @@ const sampleKeys = [
   "ember-seed",
   "tidal-shift",
 ];
+
+function getRandomInt(max) {
+  const buffer = new Uint32Array(1);
+  crypto.getRandomValues(buffer);
+  return buffer[0] % max;
+}
+
+function pickRandomChar(charset) {
+  return charset[getRandomInt(charset.length)];
+}
+
+function shuffleArray(list) {
+  for (let i = list.length - 1; i > 0; i -= 1) {
+    const j = getRandomInt(i + 1);
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+function generateRandomKey() {
+  const required = [
+    pickRandomChar(UPPERCASE),
+    pickRandomChar(LOWERCASE),
+    pickRandomChar(DIGITS),
+    pickRandomChar(SPECIALS),
+  ];
+  const allChars = UPPERCASE + LOWERCASE + DIGITS + SPECIALS;
+  while (required.length < 16) {
+    required.push(pickRandomChar(allChars));
+  }
+  return shuffleArray(required).join("");
+}
 
 function populateSelect(select, options, defaultSelection) {
   const defaults = Array.isArray(defaultSelection) ? defaultSelection : [defaultSelection];
@@ -216,6 +254,12 @@ function renderAugmentMenu() {
   updateAugmentButtons();
 }
 
+function applyRandomCase(value) {
+  return value.replace(/[a-z]/gi, (char) =>
+    getRandomInt(2) === 0 ? char.toLowerCase() : char.toUpperCase()
+  );
+}
+
 function openAugmentMenu() {
   augmentMenu.hidden = false;
   augmentToggle.setAttribute("aria-expanded", "true");
@@ -261,6 +305,20 @@ function shuffleKey() {
   renderHash();
 }
 
+function randomizeKey() {
+  keyInput.value = generateRandomKey();
+  renderHash();
+}
+
+function randomizeCase() {
+  const value = keyInput.value;
+  if (!value.trim()) {
+    return;
+  }
+  keyInput.value = applyRandomCase(value);
+  renderHash();
+}
+
 async function copyHash() {
   const value = hashOutput.textContent;
   if (
@@ -291,6 +349,8 @@ updateLabels();
 renderAugmentMenu();
 closeAugmentMenu();
 
+randomKeyBtn.addEventListener("click", randomizeKey);
+randomCaseBtn.addEventListener("click", randomizeCase);
 shuffleBtn.addEventListener("click", shuffleKey);
 copyBtn.addEventListener("click", copyHash);
 
