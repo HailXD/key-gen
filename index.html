@@ -37,13 +37,32 @@
             <select id="hash-select"></select>
           </label>
           <label class="field">
-            <span>Augmentation</span>
-            <select id="augment-select"></select>
+            <span>Augmentations</span>
+            <div class="augment-picker">
+              <button
+                class="btn ghost augment-trigger"
+                id="augment-toggle"
+                type="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="augment-menu"
+              >
+                Trim whitespace
+              </button>
+              <div class="augment-menu" id="augment-menu" role="menu" aria-label="Augmentations" hidden>
+                <div class="augment-list" id="augment-list"></div>
+              </div>
+            </div>
           </label>
         </div>
         <div class="actions">
-          <button class="btn primary" id="generate-btn">Generate</button>
           <button class="btn ghost" id="shuffle-btn">Sample key</button>
+        </div>
+        <div class="output">
+          <div class="output-header">
+            <span>Augmented key</span>
+          </div>
+          <code id="augmented-output">Waiting for input...</code>
         </div>
         <div class="output">
           <div class="output-header">
@@ -52,16 +71,6 @@
           </div>
           <code id="hash-output">Waiting for input...</code>
         </div>
-      </section>
-
-      <section class="panel info">
-        <h2>How it works</h2>
-        <ul class="info-list">
-          <li>Select a hash type. Shorter digests are expanded deterministically to 64 bytes.</li>
-          <li>Augmentation transforms the input before hashing (reverse, upper, swap case, etc.).</li>
-          <li>Output uses the same 95 printable ASCII characters every time.</li>
-          <li>Same input + settings always equals the same output.</li>
-        </ul>
       </section>
     </main>
 

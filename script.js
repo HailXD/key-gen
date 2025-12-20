@@ -5,11 +5,13 @@ const OUTPUT_LENGTH = 64;
 
 const keyInput = document.getElementById("key-input");
 const hashSelect = document.getElementById("hash-select");
-const augmentSelect = document.getElementById("augment-select");
-const generateBtn = document.getElementById("generate-btn");
+const augmentToggle = document.getElementById("augment-toggle");
+const augmentMenu = document.getElementById("augment-menu");
+const augmentList = document.getElementById("augment-list");
 const shuffleBtn = document.getElementById("shuffle-btn");
 const copyBtn = document.getElementById("copy-btn");
 const hashOutput = document.getElementById("hash-output");
+const augmentedOutput = document.getElementById("augmented-output");
 const hashChip = document.getElementById("hash-chip");
 const outputLabel = document.getElementById("output-label");
 
@@ -23,8 +25,8 @@ const HASH_TYPES = [
 ];
 
 const AUGMENTATIONS = [
+  { id: "none", label: "None (disable)", transform: (value) => value },
   { id: "trim", label: "Trim whitespace", transform: (value) => value.trim() },
-  { id: "none", label: "None", transform: (value) => value },
   { id: "lower", label: "Lowercase", transform: (value) => value.toLowerCase() },
   { id: "upper", label: "Uppercase", transform: (value) => value.toUpperCase() },
   { id: "swap", label: "Swap case", transform: (value) => swapCase(value) },
@@ -57,6 +59,8 @@ const AUGMENTATIONS = [
   },
 ];
 
+const selectedAugmentations = new Set(["trim"]);
+
 const sampleKeys = [
   "midnight-signal",
   "copper-lantern",
@@ -68,22 +72,33 @@ const sampleKeys = [
   "tidal-shift",
 ];
 
-function populateSelect(select, options, defaultId) {
+function populateSelect(select, options, defaultSelection) {
+  const defaults = Array.isArray(defaultSelection) ? defaultSelection : [defaultSelection];
   options.forEach((option) => {
     const entry = document.createElement("option");
     entry.value = option.id;
     entry.textContent = option.label;
+    if (defaults.includes(option.id)) {
+      entry.selected = true;
+    }
     select.appendChild(entry);
   });
-  select.value = defaultId;
+  if (!select.multiple && defaults.length > 0) {
+    select.value = defaults[0];
+  }
 }
 
 function getHashConfig() {
   return HASH_TYPES.find((option) => option.id === hashSelect.value) || HASH_TYPES[0];
 }
 
-function getAugmentation() {
-  return AUGMENTATIONS.find((option) => option.id === augmentSelect.value) || AUGMENTATIONS[0];
+function getAugmentations() {
+  if (selectedAugmentations.has("none")) {
+    return [];
+  }
+  return AUGMENTATIONS.filter(
+    (option) => option.id !== "none" && selectedAugmentations.has(option.id)
+  );
 }
 
 function reverseString(value) {
@@ -149,25 +164,94 @@ function updateLabels() {
   outputLabel.textContent = `64-character output (${hashConfig.label})`;
 }
 
+function updateAugmentLabel() {
+  const active = AUGMENTATIONS.filter((option) => selectedAugmentations.has(option.id));
+  let label = "None (disable)";
+  if (active.length > 0) {
+    label = active.length === 1 ? active[0].label : `${active[0].label} +${active.length - 1}`;
+  }
+  augmentToggle.textContent = label;
+}
+
+function updateAugmentButtons() {
+  augmentList.querySelectorAll(".augment-option").forEach((button) => {
+    const id = button.dataset.augmentId;
+    button.classList.toggle("is-active", selectedAugmentations.has(id));
+  });
+  updateAugmentLabel();
+}
+
+function toggleAugmentation(id) {
+  if (id === "none") {
+    selectedAugmentations.clear();
+    selectedAugmentations.add("none");
+  } else {
+    selectedAugmentations.delete("none");
+    if (selectedAugmentations.has(id)) {
+      selectedAugmentations.delete(id);
+    } else {
+      selectedAugmentations.add(id);
+    }
+    if (selectedAugmentations.size === 0) {
+      selectedAugmentations.add("none");
+    }
+  }
+  updateAugmentButtons();
+}
+
+function renderAugmentMenu() {
+  augmentList.innerHTML = "";
+  AUGMENTATIONS.forEach((option) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "augment-option";
+    button.textContent = option.label;
+    button.dataset.augmentId = option.id;
+    button.addEventListener("click", () => {
+      toggleAugmentation(option.id);
+      renderHash();
+    });
+    augmentList.appendChild(button);
+  });
+  updateAugmentButtons();
+}
+
+function openAugmentMenu() {
+  augmentMenu.hidden = false;
+  augmentToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeAugmentMenu() {
+  augmentMenu.hidden = true;
+  augmentToggle.setAttribute("aria-expanded", "false");
+}
+
 async function renderHash() {
   const rawValue = keyInput.value;
   if (!rawValue.trim()) {
     hashOutput.textContent = "Waiting for input...";
+    augmentedOutput.textContent = "Waiting for input...";
     return;
   }
   hashOutput.textContent = "Generating...";
+  augmentedOutput.textContent = "Generating...";
   try {
     const hashConfig = getHashConfig();
-    const augmentation = getAugmentation();
-    const prepared = augmentation.transform(rawValue);
+    const augmentations = getAugmentations();
+    const prepared = augmentations.reduce((current, augmentation) => {
+      return augmentation.transform(current);
+    }, rawValue);
     if (!prepared || !prepared.trim()) {
       hashOutput.textContent = "No usable input after augmentation.";
+      augmentedOutput.textContent = "No usable input after augmentation.";
       return;
     }
+    augmentedOutput.textContent = prepared;
     const bytes = await deriveBytes(prepared, hashConfig, OUTPUT_LENGTH);
     hashOutput.textContent = bytesToAlphabet(bytes);
   } catch (error) {
     hashOutput.textContent = "Hashing failed. Try again.";
+    augmentedOutput.textContent = "Hashing failed. Try again.";
   }
 }
 
@@ -203,10 +287,10 @@ async function copyHash() {
 }
 
 populateSelect(hashSelect, HASH_TYPES, "sha-512");
-populateSelect(augmentSelect, AUGMENTATIONS, "trim");
 updateLabels();
+renderAugmentMenu();
+closeAugmentMenu();
 
-generateBtn.addEventListener("click", renderHash);
 shuffleBtn.addEventListener("click", shuffleKey);
 copyBtn.addEventListener("click", copyHash);
 
@@ -215,12 +299,32 @@ hashSelect.addEventListener("change", () => {
   renderHash();
 });
 
-augmentSelect.addEventListener("change", () => {
-  renderHash();
+augmentToggle.addEventListener("click", (event) => {
+  event.preventDefault();
+  if (augmentMenu.hidden) {
+    openAugmentMenu();
+  } else {
+    closeAugmentMenu();
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (augmentMenu.hidden) {
+    return;
+  }
+  if (augmentMenu.contains(event.target) || augmentToggle.contains(event.target)) {
+    return;
+  }
+  closeAugmentMenu();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !augmentMenu.hidden) {
+    closeAugmentMenu();
+    augmentToggle.focus();
+  }
 });
 
 keyInput.addEventListener("input", () => {
-  if (keyInput.value.trim().length === 0) {
-    hashOutput.textContent = "Waiting for input...";
-  }
+  renderHash();
 });
