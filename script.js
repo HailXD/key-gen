@@ -32,10 +32,6 @@ const HASH_TYPES = [
 
 const AUGMENTATIONS = [
   { id: "none", label: "None (disable)", transform: (value) => value },
-  { id: "trim", label: "Trim whitespace", transform: (value) => value.trim() },
-  { id: "lower", label: "Lowercase", transform: (value) => value.toLowerCase() },
-  { id: "upper", label: "Uppercase", transform: (value) => value.toUpperCase() },
-  { id: "swap", label: "Swap case", transform: (value) => swapCase(value) },
   { id: "reverse", label: "Reverse characters", transform: (value) => reverseString(value) },
   {
     id: "reverse-lower",
@@ -47,6 +43,10 @@ const AUGMENTATIONS = [
     label: "Reverse + uppercase",
     transform: (value) => reverseString(value).toUpperCase(),
   },
+  { id: "trim", label: "Trim whitespace", transform: (value) => value.trim() },
+  { id: "lower", label: "Lowercase", transform: (value) => value.toLowerCase() },
+  { id: "upper", label: "Uppercase", transform: (value) => value.toUpperCase() },
+  { id: "swap", label: "Swap case", transform: (value) => swapCase(value) },
   { id: "nospace", label: "Remove spaces", transform: (value) => value.replace(/\s+/g, "") },
   {
     id: "kebab",
