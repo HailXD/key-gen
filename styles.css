@@ -2,16 +2,17 @@
 
 :root {
   --ink: #e7e4dd;
-  --paper: #0b0d10;
+  --paper: #14181f;
   --accent: #f4b351;
   --accent-cool: #5fd0c9;
   --muted: #98a0a8;
-  --panel: #141a22;
-  --panel-soft: #0f141b;
-  --border: rgba(231, 228, 221, 0.08);
-  --border-strong: rgba(231, 228, 221, 0.18);
+  --panel: #1c232c;
+  --panel-soft: #192029;
+  --border: rgba(231, 228, 221, 0.12);
+  --border-strong: rgba(231, 228, 221, 0.2);
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   --glow: rgba(244, 179, 81, 0.35);
+  color-scheme: dark;
 }
 
 *,
@@ -143,7 +144,7 @@ body {
 
 .field select option {
   color: var(--ink);
-  background: var(--panel);
+  background-color: var(--panel);
 }
 
 .field input:focus,
@@ -249,7 +250,7 @@ body {
   margin-top: 22px;
   padding: 16px;
   border-radius: 16px;
-  background: #0e141b;
+  background: #192029;
   border: 1px solid var(--border);
 }
 
