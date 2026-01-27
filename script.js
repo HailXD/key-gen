@@ -16,6 +16,7 @@ const randomKeyBtn = document.getElementById("random-key-btn");
 const randomCaseBtn = document.getElementById("random-case-btn");
 const shuffleBtn = document.getElementById("shuffle-btn");
 const copyBtn = document.getElementById("copy-btn");
+const copyAugmentedBtn = document.getElementById("copy-augmented-btn");
 const hashOutput = document.getElementById("hash-output");
 const augmentedOutput = document.getElementById("augmented-output");
 const hashChip = document.getElementById("hash-chip");
@@ -320,26 +321,37 @@ function randomizeCase() {
 }
 
 async function copyHash() {
-  const value = hashOutput.textContent;
-  if (
-    !value ||
-    value === "Waiting for input..." ||
-    value === "Generating..." ||
-    value === "Hashing failed. Try again." ||
-    value === "No usable input after augmentation."
-  ) {
+  return copyValue(hashOutput.textContent, copyBtn);
+}
+
+async function copyAugmented() {
+  return copyValue(augmentedOutput.textContent, copyAugmentedBtn);
+}
+
+function canCopy(value) {
+  return (
+    value &&
+    value !== "Waiting for input..." &&
+    value !== "Generating..." &&
+    value !== "Hashing failed. Try again." &&
+    value !== "No usable input after augmentation."
+  );
+}
+
+async function copyValue(value, button) {
+  if (!canCopy(value)) {
     return;
   }
   try {
     await navigator.clipboard.writeText(value);
-    copyBtn.textContent = "Copied!";
+    button.textContent = "Copied!";
     setTimeout(() => {
-      copyBtn.textContent = "Copy";
+      button.textContent = "Copy";
     }, 1200);
   } catch (error) {
-    copyBtn.textContent = "Copy failed";
+    button.textContent = "Copy failed";
     setTimeout(() => {
-      copyBtn.textContent = "Copy";
+      button.textContent = "Copy";
     }, 1400);
   }
 }
@@ -353,6 +365,7 @@ randomKeyBtn.addEventListener("click", randomizeKey);
 randomCaseBtn.addEventListener("click", randomizeCase);
 shuffleBtn.addEventListener("click", shuffleKey);
 copyBtn.addEventListener("click", copyHash);
+copyAugmentedBtn.addEventListener("click", copyAugmented);
 
 hashSelect.addEventListener("change", () => {
   updateLabels();
